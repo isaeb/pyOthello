@@ -1,0 +1,1 @@
+make it so when there are no legal moves for one side, the moves are made for the other side
