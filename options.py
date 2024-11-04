@@ -27,6 +27,21 @@ options = {
             }
         ]
     },
+    'resign': {
+        'function': 'resign',
+        'usage': 'Resign the current game.',
+        'arguments': [
+            {
+                'label': '--color',
+                'usage': 'Force a specific color to resign.'
+            }
+        ]
+    },
+    'draw': {
+        'function': 'draw',
+        'usage': 'Draw the current game.',
+        'arguments': []
+    },
     'display': {
         'function': 'display',
         'usage': 'Display information about the current game.',

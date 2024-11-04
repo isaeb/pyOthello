@@ -21,12 +21,58 @@ class Board:
             s += '\n'
         return s
     
-    def has_legal_moves(self, color:Literal['b', 'w']):
+    def get_score(self, color:Literal['b', 'w']):
+        count = 0
+        for col in range(8):
+            for row in range(8):
+                if self.board[col][row] == color:
+                    count += 1
+        return count
+    
+    def game_over(self) -> bool:
+        for color in 'bw':
+            if self.has_legal_moves(color):
+                return False
+        return True
+    
+    def has_legal_moves(self, color:Literal['b', 'w']) -> False:
         for col in 'abcdefgh':
             for row in '1234567':
                 if is_legal(self.board, col+row, color):
                     return True
         return False
+    
+    def set_position(self, fen:str) -> bool:
+        lines = fen.split('/')
+        if len(lines) != 8:
+            return False
+        board = [['' for _ in range(8)] for _ in range(8)]
+        try:
+            for y, line in enumerate(lines):
+                x = 0
+                for char in line:
+                    match char:
+                        case 'd':
+                            board[x][y] = 'b'
+                            x += 1
+                        case 'D':
+                            board[x][y] = 'w'
+                            x += 1
+                        case _:
+                            x += int(char)
+            self.board = board
+            self.update_fen()
+        except Exception as e:
+            print(e)
+            return False
+        return True
+    
+    def update_fen(self) -> bool:
+        try:
+            self.fen = create_fen(self.board)
+            return True
+        except:
+            return False
 
     def make_move(self, coordinate:str, color:Literal['b', 'w'], update_fen:bool=True, update_pgn=True, update_move_list:bool=True) -> bool:
         if not is_legal(self.board, coordinate, color):
@@ -74,10 +120,10 @@ def create_pgn(moves:list[Move]):
         if move.color == 'b':
             s += f'{move_num}. {move.notation}'
             if last_move == 'b':
-                s += '...\n'
+                s += '..\n'
         else:
             if last_move == 'w':
-                s += f'{move_num}. ...'
+                s += f'{move_num}. ..'
             s += f' {move.notation}\n'
 
 def is_legal(board:list[list[str]], coordinate:str, color:Literal['b', 'w']) -> bool:
@@ -114,7 +160,7 @@ def legal_coordinate(column:int, row:int):
         return False
     return True
 
-def create_fen(board:list[list[str]]):
+def create_fen(board:list[list[str]]) -> str:
     fen = ''
     whitespace = 0
     for row in range(8):

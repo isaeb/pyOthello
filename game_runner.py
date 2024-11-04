@@ -6,6 +6,7 @@ class Runner:
     def __init__(self):
         self.game = Game
         self.initialized = False
+        self.playing = False
 
         # Settings
         self.auto_start_game = False
@@ -51,18 +52,19 @@ class Runner:
             color = 'w'
         else:
             color = 'b'
-        pgn = kwargs.get('pgn')
+
+        pgn = kwargs.get('pgn', None)
         if pgn is not None:
             try:
                 with open(pgn) as f:
-                    self.game = Game(f.read(), color)
+                    pgn = f.read()
             except Exception as e:
                 print(e)
-        else:
-            self.game = Game()
 
-        fen = kwargs.get('fen', '')
+        fen = kwargs.get('fen', None)
+        self.game = Game(pgn, fen, color)
         self.initialized = True
+        self.playing = True
 
         print('New game started.')
         self.auto_display()
@@ -75,7 +77,20 @@ class Runner:
         if self.auto_display_pgn:
             self.game.print_pgn()
 
+    def print_result(self):
+        if self.game.result is None:
+            print('No result to print.')
+        else:
+            print(f'{self.game.result} {self.game.black_count}-{self.game.white_count}')
+
     def move(self, **kwargs):
+        if not self.initialized:
+            print('Game not initialized. Try using \'new-game\' first.')
+            return
+        if not self.playing:
+            print('Game over. Use \'new-game\' to start a new game.')
+            return
+        
         if 'color' in kwargs.keys():
             for key in kwargs.keys():
                 if key == 'color':
@@ -84,6 +99,36 @@ class Runner:
         else:
             for key in kwargs.keys():
                 self.game.make_move(key)
+        if self.game.game_over:
+            self.game_over()
+        self.auto_display()
+
+    def resign(self, **kwargs):
+        if not self.initialized:
+            print('Game not initialized. Try using \'new-game\' first.')
+            return
+        if 'color' in kwargs.keys():
+            winner = ['black', 'white']['wb'.find(kwargs.get('color'))]
+        else:
+            winner = ['black', 'white']['wb'.find(self.game.color)]
+        self.game.result = f'{winner} wins by resignation'
+        self.playing = False
+        self.print_result()
+        self.auto_display()
+
+    def draw(self, **kwargs):
+        if not self.initialized:
+            print('Game not initialized. Try using \'new-game\' first.')
+            return
+        self.game.result = 'draw'
+        self.playing = False
+        self.print_result()
+        self.auto_display()
+    
+    def game_over(self):
+        print('Game over. ', end=None)
+        self.playing = False
+        self.print_result()
         self.auto_display()
 
     def display(self, **kwargs):
@@ -114,7 +159,7 @@ def print_help(command:str=None):
                 s += f'\t {label}:\t{usage}\n'
     print(s)
 
-print('Welcome to Othello!\nType \'help\' to learn how to use the program.')
+print('Welcome to the pyOthello interface!\nType \'help\' to learn how to use the program.')
 runner = Runner()
 while True:
     text = input('> ')
@@ -134,7 +179,8 @@ while True:
         continue
 
     kwargs = {}
-    for index in range(len(args)):
+    index = 0
+    while index < len(args):
         arg_value = True
         if args[index].find('-') == 0: # key
             if args[index].find('--') == 0: # arg is string
@@ -142,6 +188,11 @@ while True:
         
         arg_name = args[index].lstrip('-')
         kwargs[arg_name] = arg_value
+
+        if args[index].find('--') == 0:
+            index += 2
+        else:
+            index += 1
     try:
         func(**kwargs)
     except Exception as e:
