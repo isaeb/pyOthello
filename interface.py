@@ -1,6 +1,10 @@
+import os
+import json
+
 from othello.game import Game
 from othello.move import Move
 from options import options
+from settings import settings
 
 class Runner:
     def __init__(self):
@@ -9,43 +13,30 @@ class Runner:
         self.playing = False
 
         # Settings
-        self.auto_start_game = False
-        self.auto_display_board = True
-        self.auto_display_fen = False
-        self.auto_display_pgn = False
+        self.init_settings()
 
-        if self.auto_start_game:
+        if self.settings.get('auto_start_game'):
             self.new_game()
     
     def exit(self):
         quit()
 
-    def display_settings(self, **kwargs):
-        print('Settings:')
-        print(f'\tauto-start-game:\t{self.auto_start_game}')
-        print(f'\tauto-display-board:\t{self.auto_display_board}')
-        print(f'\tauto-display-fen:\t{self.auto_display_fen}')
-        print(f'\tauto-display-pgn:\t{self.auto_display_pgn}')
+    def init_settings(self):
+        if os.path.exists('settings.json'):
+            with open('settings.json') as f:
+                self.settings = json.load(f)
+        else:
+            self.settings = {key: settings[key].get('default') for key in settings.keys()}
 
     def enable(self, **kwargs):
-        if kwargs.get('auto-start-game', False):
-            self.auto_start_game = True
-        if kwargs.get('auto-display-board', False):
-            self.auto_display_board = True
-        if kwargs.get('auto-display-fen', False):
-            self.auto_display_fen = True
-        if kwargs.get('auto-display-pgn', False):
-            self.auto_display_pgn = True
+        for key in self.settings.keys():
+            if kwargs.get(key, False):
+                self.settings[key] = True
     
     def disable(self, **kwargs):
-        if kwargs.get('auto-start-game', False):
-            self.auto_start_game = False
-        if kwargs.get('auto-display-board', False):
-            self.auto_display_board = False
-        if kwargs.get('auto-display-fen', False):
-            self.auto_display_fen = False
-        if kwargs.get('auto-display-pgn', False):
-            self.auto_display_pgn = False
+        for key in self.settings.keys():
+            if kwargs.get(key, False):
+                self.settings[key] = False
 
     def new_game(self, **kwargs):
         if kwargs.get('w', False):
@@ -95,10 +86,13 @@ class Runner:
             for key in kwargs.keys():
                 if key == 'color':
                     break
-                self.game.make_move(Move(key, kwargs.get('color')))
+                result = self.game.make_move(Move(key, kwargs.get('color')))
         else:
             for key in kwargs.keys():
-                self.game.make_move(key)
+                result = self.game.make_move(key)
+        if not result:
+            print('Illegal move')
+            return
         if self.game.game_over:
             self.game_over()
         self.auto_display()
@@ -160,6 +154,14 @@ def print_help(command:str=None):
                 s += f'\t {label}:\t{usage}\n'
     print(s)
 
+def print_settings(settings_dict):
+    s = ''
+    for key in settings.keys():
+        s += f'{key}\n'
+        s += f'\tvalue:    {settings_dict.get(key)}\n'
+        s += f'\tfunction: {settings[key].get('hint')}\n'
+    print(s)
+
 print('Welcome to the pyOthello interface!\nType \'help\' to learn how to use the program.')
 runner = Runner()
 while True:
@@ -171,6 +173,9 @@ while True:
     try:
         if key == 'help':
             print_help()
+            continue
+        elif key == 'settings':
+            print_settings(runner.settings)
             continue
         else:
             func_name = options[key]['function']

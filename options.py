@@ -60,11 +60,6 @@ options = {
             }
         ]
     },
-    'display-settings': {
-        'function': 'display_settings',
-        'usage': 'Display the current settings.',
-        'arguments': []
-    },
     'enable': {
         'function': 'enable',
         'usage': 'Enable a setting.',
