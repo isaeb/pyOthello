@@ -102,6 +102,7 @@ class Runner:
         if self.game.game_over:
             self.game_over()
         self.auto_display()
+        print(f'{['Black', 'White']['bw'.find(self.game.color)]} to move...')
 
     def resign(self, **kwargs):
         if not self.initialized:

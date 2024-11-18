@@ -46,11 +46,7 @@ class Game:
         if self.result is not None:
             return False
         if type(move) is str:
-            color = self.color
-            self.color = 'bw'['wb'.find(self.color)]
-            if not self.board.has_legal_moves(self.color):
-                self.color = 'bw'['wb'.find(self.color)]
-            success = self.board.make_move(move, color)
+            success = self.board.make_move(move, self.color)
         else:
             success = self.board.make_move(move.notation, move.color)
         
@@ -58,6 +54,9 @@ class Game:
             return False
 
         # Update counts
+        self.color = 'bw'['wb'.find(self.color)]
+        if not self.board.has_legal_moves(self.color):
+            self.color = 'bw'['wb'.find(self.color)]
         self.game_over = self.board.game_over()
         self.black_count = self.board.get_score('b')
         self.white_count = self.board.get_score('w')
