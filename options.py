@@ -1,4 +1,12 @@
 options = {
+    'help': {
+        'usage': 'Display information about how to use the program.',
+        'arguments': []
+    },
+    'settings': {
+        'usage': 'Display the current settings.',
+        'arguments': []
+    },
     'new-game': {
         'function': 'new_game',
         'usage': 'Start a new game.',
@@ -13,7 +21,7 @@ options = {
             },
             {
                 'label': '-w',
-                'usage': 'Initialize a game with white to move.(Games are initialized with black to move by default).'
+                'usage': 'Initialize a game with white to move. (Games are initialized with black to move by default).'
             }
         ]
     },

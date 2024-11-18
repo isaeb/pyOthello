@@ -19,6 +19,8 @@ class Runner:
             self.new_game()
     
     def exit(self):
+        with open('settings.json', 'w') as f:
+            json.dump(self.settings, f)
         quit()
 
     def init_settings(self):
@@ -61,11 +63,11 @@ class Runner:
         self.auto_display()
 
     def auto_display(self):
-        if self.auto_display_board:
+        if self.settings.get('auto_display_board'):
             self.game.print_board()
-        if self.auto_display_fen:
+        if self.settings.get('auto_display_fen'):
             self.game.print_fen()
-        if self.auto_display_pgn:
+        if self.settings.get('auto_display_pgn'):
             self.game.print_pgn()
 
     def print_result(self):
@@ -139,8 +141,8 @@ class Runner:
 
 
 def print_help(command:str=None):
+    s = ''
     if command is None:
-        s = 'help:\n\tusage: Display information about how to use the program.\n'
         for key in options.keys():
             usage = options[key].get('usage')
             s += f'{key}:\n\tusage: {usage}\n'
@@ -180,7 +182,7 @@ while True:
         else:
             func_name = options[key]['function']
             func = getattr(runner, options[key]['function'])
-    except:
+    except Exception as e:
         print(f'{key} is not a valid command.')
         continue
 
