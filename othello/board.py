@@ -21,7 +21,7 @@ class Board:
             s += '\n'
         return s
     
-    def get_score(self, color:Literal['b', 'w']):
+    def get_score(self, color:Literal['b', 'w']) -> int:
         count = 0
         for col in range(8):
             for row in range(8):
@@ -35,7 +35,15 @@ class Board:
                 return False
         return True
     
-    def has_legal_moves(self, color:Literal['b', 'w']) -> False:
+    def get_legal_moves(self, color:Literal['b', 'w']) -> int:
+        count = 0
+        for col in 'abcdefgh':
+            for row in '1234567':
+                if is_legal(self.board, col+row, color):
+                    count += 1
+        return count
+    
+    def has_legal_moves(self, color:Literal['b', 'w']) -> bool:
         for col in 'abcdefgh':
             for row in '1234567':
                 if is_legal(self.board, col+row, color):
