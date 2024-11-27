@@ -119,6 +119,34 @@ class Board:
         if update_pgn:
             self = create_pgn(self.moves)
         return True
+    
+    def is_legal(self, coordinate:str, color:Literal['b', 'w']) -> bool:
+        c = 'abcdefgh'.find(coordinate[0])
+        r = int(coordinate[1])-1
+        other_color = 'wb'['bw'.find(color)]
+
+        if not legal_coordinate(c, r):
+            return False
+        
+        if self.board[c][r] != '':
+            return False
+            
+        for dx in [1, 0, -1]:
+            for dy in [1, 0, -1]:
+                if dx == 0 and dy == 0:
+                    continue
+                cursor_col = c + dx
+                cursor_row = r + dy
+                if not legal_coordinate(cursor_col, cursor_row):
+                    continue
+                while self.board[cursor_col][cursor_row] == other_color:
+                    cursor_col += dx
+                    cursor_row += dy
+                    if not legal_coordinate(cursor_col, cursor_row):
+                        break
+                    if self.board[cursor_col][cursor_row] == color:
+                        return True
+                    
 
 def create_pgn(moves:list[Move]):
     s = ''
