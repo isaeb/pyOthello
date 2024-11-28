@@ -221,8 +221,8 @@ while True:
             index += 2
         else:
             index += 1
-    #try:
-    func(**kwargs)
-    #except Exception as e:
-        #print(e)
+    try:
+        func(**kwargs)
+    except Exception as e:
+        print(e)
     
