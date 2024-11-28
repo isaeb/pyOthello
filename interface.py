@@ -1,10 +1,15 @@
 import os
 import json
+import time
 
 from othello.game import Game
 from othello.move import Move
+
 from options import options
 from settings import settings
+
+from engine.engine import *
+
 
 class Runner:
     def __init__(self):
@@ -61,6 +66,21 @@ class Runner:
 
         print('New game started.')
         self.auto_display()
+
+    def ai_move(self, **kwargs):
+        if not self.initialized:
+            print('Game not initialized. Try using \'new-game\' first.')
+            return
+        if not self.playing:
+            print('Game over. Use \'new-game\' to start a new game.')
+            return
+        
+        depth = int(kwargs.get('depth', 5))
+        start_time = time.time()
+        result = ai_move(self.game.board, self.game.color, depth=depth)
+        execution_time = time.time() - start_time
+
+        print(f'The computer on depth={depth} recommends {result[0]} [{str(result[1])[:5]}]\nExecution time: {execution_time}')
 
     def auto_display(self):
         if self.settings.get('auto_display_board'):
@@ -164,7 +184,7 @@ def print_settings(settings_dict):
         s += f'\tfunction: {settings[key].get('hint')}\n'
     print(s)
 
-print('Welcome to the pyOthello interface!\nType \'help\' to learn how to use the program.')
+print('Welcome to the py_othello interface!\nType \'help\' to learn how to use the program.')
 runner = Runner()
 while True:
     text = input('> ')
@@ -201,8 +221,8 @@ while True:
             index += 2
         else:
             index += 1
-    try:
-        func(**kwargs)
-    except Exception as e:
-        print(e)
+    #try:
+    func(**kwargs)
+    #except Exception as e:
+        #print(e)
     

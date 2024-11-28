@@ -35,6 +35,16 @@ options = {
             }
         ]
     },
+    'ai-move': {
+        'function': 'ai_move',
+        'usage': 'Print the ai move.',
+        'arguments': [
+            {
+                'label': '--depth',
+                'usage': 'Make a recommendation with a certain depth.'
+            }
+        ]
+    },
     'resign': {
         'function': 'resign',
         'usage': 'Resign the current game.',

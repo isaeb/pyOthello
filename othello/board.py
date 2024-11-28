@@ -1,6 +1,7 @@
 from othello.move import Move
 from typing import Literal
 
+
 class Board:
     def __init__(self):
         # Init variables
@@ -35,7 +36,7 @@ class Board:
                 return False
         return True
     
-    def get_legal_moves(self, color:Literal['b', 'w']) -> int:
+    def legal_move_count(self, color:Literal['b', 'w']) -> int:
         count = 0
         for col in 'abcdefgh':
             for row in '1234567':
@@ -146,6 +147,7 @@ class Board:
                         break
                     if self.board[cursor_col][cursor_row] == color:
                         return True
+        return False
                     
 
 def create_pgn(moves:list[Move]):
