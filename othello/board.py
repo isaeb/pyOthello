@@ -3,11 +3,14 @@ from typing import Literal
 
 
 class Board:
-    def __init__(self):
+    def __init__(self, fen=None):
         # Init variables
         self.moves = []
         self.board = init_board()
-        self.fen = create_fen(self.board)
+        if fen is None:
+            self.fen = create_fen(self.board)
+        else:
+            self.set_position(fen)
     
     def __str__(self):
         s = ''
@@ -87,7 +90,7 @@ class Board:
         if not is_legal(self.board, coordinate, color):
             return False
 
-        c = 'abcdefgh'.find(coordinate[0])
+        c = 'abcdefgh'.find(coordinate[0].lower())
         r = int(coordinate[1])-1
         other_color = 'wb'['bw'.find(color)]
         for dx in [1, 0, -1]:
@@ -122,7 +125,7 @@ class Board:
         return True
     
     def is_legal(self, coordinate:str, color:Literal['b', 'w']) -> bool:
-        c = 'abcdefgh'.find(coordinate[0])
+        c = 'abcdefgh'.find(coordinate[0].lower())
         r = int(coordinate[1])-1
         other_color = 'wb'['bw'.find(color)]
 
@@ -165,7 +168,7 @@ def create_pgn(moves:list[Move]):
             s += f' {move.notation}\n'
 
 def is_legal(board:list[list[str]], coordinate:str, color:Literal['b', 'w']) -> bool:
-    c = 'abcdefgh'.find(coordinate[0])
+    c = 'abcdefgh'.find(coordinate[0].lower())
     r = int(coordinate[1])-1
     other_color = 'wb'['bw'.find(color)]
 
