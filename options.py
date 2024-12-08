@@ -41,7 +41,7 @@ options = {
         'arguments': [
             {
                 'label': '--depth',
-                'usage': 'Make a recommendation with a certain depth.'
+                'usage': 'Make a recommendation with a certain depth. (Default is 6)'
             }
         ]
     },

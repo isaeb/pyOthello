@@ -1,6 +1,7 @@
 from othello.board import Board
 from typing import Literal
 from concurrent.futures import ThreadPoolExecutor
+from engine.settings import WEIGHTS
 
 
 def ai_move(board: Board, color, depth=3):
@@ -271,8 +272,19 @@ def eval_bitboard(black_bitboard:int, white_bitboard:int):
     if min_weights + max_weights > 0:
         weights = 100 * (max_weights - min_weights) / (max_weights + min_weights)
 
-    # All values are weighted equally (to be changed)
-    evaluation = coin_parity + mobility + corners + stability + weights
+    total_discs = max_discs + min_discs
+    if total_discs < 20:
+        game_phase = 'opening'
+    elif total_discs < 40:
+        game_phase = 'middlegame'
+    else:
+        game_phase = 'endgame'
+    evaluation = 0
+    evaluation += coin_parity * WEIGHTS[game_phase]['coin_parity']
+    evaluation += mobility * WEIGHTS[game_phase]['mobility']
+    evaluation += corners * WEIGHTS[game_phase]['corners']
+    evaluation += stability * WEIGHTS[game_phase]['stability']
+    evaluation += weights * WEIGHTS[game_phase]['weights']
     return evaluation
 
 def get_weights(bitmap:int):

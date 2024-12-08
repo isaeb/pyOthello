@@ -75,7 +75,7 @@ class Runner:
             print('Game over. Use \'new-game\' to start a new game.')
             return
         
-        depth = int(kwargs.get('depth', 5))
+        depth = int(kwargs.get('depth', 6))
         start_time = time.time()
         result = ai_move(self.game.board, self.game.color, depth=depth)
         execution_time = time.time() - start_time
