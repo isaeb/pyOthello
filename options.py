@@ -42,6 +42,10 @@ options = {
             {
                 'label': '--depth',
                 'usage': 'Make a recommendation with a certain depth. (Default is 6)'
+            },
+            {
+                'label': '--time',
+                'usage': 'Maximum execution time'
             }
         ]
     },

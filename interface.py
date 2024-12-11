@@ -1,6 +1,6 @@
 import os
 import json
-import time
+from time import time
 
 from othello.game import Game
 from othello.move import Move
@@ -76,9 +76,10 @@ class Runner:
             return
         
         depth = int(kwargs.get('depth', 6))
-        start_time = time.time()
-        result = ai_move(self.game.board, self.game.color, depth=depth)
-        execution_time = time.time() - start_time
+        time_limit = float(kwargs.get('time', 999))
+        start_time = time()
+        result = ai_move_iterative(self.game.board, self.game.color, depth, time_limit)
+        execution_time = time() - start_time
 
         print(f'The computer on depth={depth} recommends {result[0]} [{str(result[1])[:5]}]\nExecution time: {execution_time}')
 
@@ -221,8 +222,8 @@ while True:
             index += 2
         else:
             index += 1
-    try:
-        func(**kwargs)
-    except Exception as e:
-        print(e)
+    #try:
+    func(**kwargs)
+    #except Exception as e:
+        #print(e)
     

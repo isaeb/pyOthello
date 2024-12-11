@@ -1,10 +1,25 @@
+from time import time
 from othello.board import Board
 from typing import Literal
 from concurrent.futures import ThreadPoolExecutor
 from engine.settings import WEIGHTS
 
+import threading
 
-def ai_move(board: Board, color, depth=3):
+
+transposition_lock = threading.Lock()
+
+def ai_move_iterative(board, color, max_depth, time_limit=5.0):
+    best_move = None
+    if time_limit is not None:
+        time_limit += time()
+    for depth in range(1, max_depth + 1):
+        best_move = ai_move(board, color, depth, {}, time_limit)
+        if time_limit is not None and time() > time_limit:
+            break
+    return best_move
+
+def ai_move(board: Board, color, depth=3, transposition_table={}, time_limit=None):
     best_score = float('-inf')
     best_move = None
     black_bitboard, white_bitboard = board_to_bitboard(board.board)
@@ -13,10 +28,11 @@ def ai_move(board: Board, color, depth=3):
     # Function to evaluate a single move
     def evaluate_move(move):
         new_black_bitboard, new_white_bitboard = make_move_bitboard(black_bitboard, white_bitboard, color, move)
-        score = minimax_ab_bitboard(
+        score = minimax_ab_bitboard_tt(
             new_black_bitboard, new_white_bitboard,
             depth-1, float('-inf'), float('inf'),
-            False, opponent_color(color)
+            False, opponent_color(color),
+            transposition_table, time_limit
         )
         return move, score
 
@@ -30,6 +46,8 @@ def ai_move(board: Board, color, depth=3):
 
         # Process results as threads complete
         for future in futures:
+            if time_limit is not None and time() > time_limit:
+                break
             move, score = future.result()
             if score > best_score:
                 best_score = score
@@ -37,14 +55,19 @@ def ai_move(board: Board, color, depth=3):
 
     return move_to_notation(best_move), best_score
 
-def minimax_ab_bitboard(black_bitboard, white_bitboard, depth, alpha, beta, maximizing_player, color):
-    if depth == 0 or game_over(black_bitboard, white_bitboard):
+def minimax_ab_bitboard_tt(black_bitboard, white_bitboard, depth, alpha, beta, maximizing_player, color, transposition_table, time_limit=None):
+    # Transposition Table
+    board_hash = hash_bitboards(black_bitboard, white_bitboard)
+    if board_hash in transposition_table:
+        return get_from_tt(board_hash, transposition_table)
+    
+    if depth == 0 or game_over(black_bitboard, white_bitboard) or (time_limit is not None and time() > time_limit):
         return eval_bitboard(black_bitboard, white_bitboard)
     
     legal_moves = find_legal_moves_bitboard(black_bitboard, white_bitboard, color)
     if maximizing_player:
         if legal_moves == 0:# Pass to other player
-            score = minimax_ab_bitboard(black_bitboard, white_bitboard, depth-1, alpha, beta, False, opponent_color(color))
+            score = minimax_ab_bitboard_tt(black_bitboard, white_bitboard, depth-1, alpha, beta, False, opponent_color(color), transposition_table, time_limit)
             alpha = max(alpha, score)
             return score
         max_score = float('-inf')
@@ -52,15 +75,16 @@ def minimax_ab_bitboard(black_bitboard, white_bitboard, depth, alpha, beta, maxi
             move = legal_moves & - legal_moves
             legal_moves &= legal_moves - 1
             new_black_bitboard, new_white_bitboard = make_move_bitboard(black_bitboard, white_bitboard, color, move)
-            score = minimax_ab_bitboard(new_black_bitboard, new_white_bitboard, depth-1, alpha, beta, False, opponent_color(color))
+            score = minimax_ab_bitboard_tt(new_black_bitboard, new_white_bitboard, depth-1, alpha, beta, False, opponent_color(color), transposition_table, time_limit)
             max_score = max(max_score, score)
             alpha = max(alpha, score)
             if beta <= alpha:
-                return max_score
+                break
+        store_in_tt(board_hash, max_score, transposition_table)
         return max_score
     else:
         if legal_moves == 0:# Pass to other player
-            score = minimax_ab_bitboard(black_bitboard, white_bitboard, depth-1, alpha, beta, True, opponent_color(color))
+            score = minimax_ab_bitboard_tt(black_bitboard, white_bitboard, depth-1, alpha, beta, True, opponent_color(color), transposition_table, time_limit)
             beta = min(beta, score)
             return score
         min_score = float('inf')
@@ -68,12 +92,27 @@ def minimax_ab_bitboard(black_bitboard, white_bitboard, depth, alpha, beta, maxi
             move = legal_moves & - legal_moves
             legal_moves &= legal_moves - 1
             new_black_bitboard, new_white_bitboard = make_move_bitboard(black_bitboard, white_bitboard, color, move)
-            score = minimax_ab_bitboard(new_black_bitboard, new_white_bitboard, depth-1, alpha, beta, True, opponent_color(color))
+            score = minimax_ab_bitboard_tt(new_black_bitboard, new_white_bitboard, depth-1, alpha, beta, True, opponent_color(color), transposition_table, time_limit)
             min_score = min(min_score, score)
             beta = min(beta, score)
             if beta <= alpha:
-                return min_score
+                break
+        store_in_tt(board_hash, min_score, transposition_table)
         return min_score
+    
+def get_from_tt(board_hash, transposition_table):
+    with transposition_lock:
+        return transposition_table.get(board_hash)
+
+def store_in_tt(board_hash, value, transposition_table):
+    with transposition_lock:
+        transposition_table[board_hash] = value
+
+def hash_bitboards(board1, board2):
+    prime = 0x9e3779b97f4a7c15  # A large 64-bit prime number
+    hash_value = board1 + prime
+    hash_value ^= board2 * prime
+    return hash_value
 
 def opponent_color(color):
     return 'w' if color == 'b' else 'b'
