@@ -6,7 +6,7 @@ from othello.game import Game
 from othello.move import Move
 
 from options import options
-from settings import settings
+from settings_info import settings
 
 from engine.engine import *
 
@@ -222,8 +222,8 @@ while True:
             index += 2
         else:
             index += 1
-    #try:
-    func(**kwargs)
-    #except Exception as e:
-        #print(e)
+    try:
+        func(**kwargs)
+    except Exception as e:
+        print(e)
     
