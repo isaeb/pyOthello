@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Othello Game</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <header>
+        <h1>Othello</h1>
+    </header>
+    <main>
+        <div class="board-container">
+            <div class="board">
+                <!-- Render the board dynamically here -->
+                {% for row in board %}
+                <div class="row">
+                    {% for cell in row %}
+                    <div class="cell {{ cell }}"></div>
+                    {% endfor %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        <aside class="moves-panel">
+            <h2>Moves</h2>
+            <ul>
+                {% for move in moves %}
+                <li>{{ move }}</li>
+                {% endfor %}
+            </ul>
+        </aside>
+    </main>
+</body>
+</html>

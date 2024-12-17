@@ -185,7 +185,7 @@ def print_settings(settings_dict):
         s += f'\tfunction: {settings[key].get('hint')}\n'
     print(s)
 
-print('Welcome to the py_othello interface!\nType \'help\' to learn how to use the program.')
+print('Welcome to the python-othello interface!\nType \'help\' to learn how to use the program.')
 runner = Runner()
 while True:
     text = input('> ')
